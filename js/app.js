@@ -5,6 +5,9 @@
 const PRACTICE_GAP = { min: 1, max: 4 };
 const CHALLENGE_GAP = { min: 1, max: 4 };
 
+// 結果をポストするときに添えるURL（ローカルで開いた場合に使う）
+const SITE_URL = 'https://onipoo.github.io/mj-nanikiru/';
+
 // チャレンジモードの設定
 const CHALLENGE = {
   timeLimit: 4000, // 1問あたりの制限時間（ミリ秒）
@@ -48,6 +51,7 @@ const el = {
   endScore: document.getElementById('end-score'),
   endMessage: document.getElementById('end-message'),
   retry: document.getElementById('retry'),
+  share: document.getElementById('share'),
   build: document.getElementById('build'),
   buildHand: document.getElementById('build-hand'),
   buildCount: document.getElementById('build-count'),
@@ -255,6 +259,7 @@ function challengeEnd(cleared, errorMessage) {
     : cleared
     ? CHALLENGE.goal + '問すべて正解しました。'
     : '下の表で正解を確認できます。';
+  el.share.href = shareLink(c.correct, cleared);
   show(el.end, true);
   // クリア時は最後の問題も正解しているので手牌と解説は出さない
   if (cleared) {
@@ -262,6 +267,20 @@ function challengeEnd(cleared, errorMessage) {
     show(el.result, false);
   }
   el.retry.focus({ preventScroll: true });
+}
+
+// X に結果をポストするリンクを作る
+function shareLink(correct, cleared) {
+  const text = cleared
+    ? '麻雀 何切る問題のチャレンジモードで' + CHALLENGE.goal + '問連続正解、クリアしました！'
+    : '麻雀 何切る問題のチャレンジモードで' + correct + '問連続正解でした！';
+  // file:// で開いている場合は公開URLを添える
+  const url = location.protocol === 'https:'
+    ? location.origin + location.pathname
+    : SITE_URL;
+  return 'https://x.com/intent/tweet?text=' + encodeURIComponent(text) +
+    '&url=' + encodeURIComponent(url) +
+    '&hashtags=' + encodeURIComponent('麻雀,何切る');
 }
 
 function updateHud() {
