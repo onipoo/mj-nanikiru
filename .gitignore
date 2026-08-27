@@ -1,0 +1,13 @@
+# 元画像（変換後の images/bg.jpg・images/char.webp を使うため公開には不要）
+背景.png
+キャラ2.png
+
+# Windows / エディタが作る一時ファイル
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 動作確認用の一時ファイル
+_t.js
+_t.html
+_autotest.html

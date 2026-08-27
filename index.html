@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>麻雀 何切る問題</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+  <h1><img src="images/char.webp" alt="" class="mascot-icon">麻雀 何切る問題</h1>
+
+  <div class="header-right" id="practice-controls">
+    <label class="level">
+      向聴数
+      <select id="target">
+        <option value="" selected>ランダム</option>
+        <option value="0">聴牌</option>
+        <option value="1">1シャンテン</option>
+        <option value="2">2シャンテン</option>
+        <option value="3">3シャンテン</option>
+      </select>
+    </label>
+  </div>
+
+  <nav class="mode-tabs">
+    <button type="button" class="mode-tab is-active" data-mode="practice">練習モード</button>
+    <button type="button" class="mode-tab" data-mode="challenge">チャレンジモード</button>
+    <button type="button" class="mode-tab" data-mode="build">作成モード</button>
+  </nav>
+</header>
+
+<main class="main">
+
+  <!-- チャレンジモードの説明とスタート -->
+  <section id="intro" class="panel hidden">
+    <img src="images/char.webp" alt="" class="mascot">
+    <h2 class="panel-title">チャレンジモード</h2>
+    <ul class="rules">
+      <li>制限時間は <b>1問 4秒</b></li>
+      <li>正解するとすぐ次の問題へ進む</li>
+      <li><b>間違えるか時間切れになった時点で終了</b></li>
+      <li><b>100問連続正解でクリア</b></li>
+      <li>向聴数はランダム。問題の内容は練習モードと同じ</li>
+    </ul>
+    <button id="start" class="next-btn" type="button">スタート</button>
+    <p id="prepare" class="loading hidden">問題を準備中…</p>
+  </section>
+
+  <!-- チャレンジモード中の残り時間と正解数 -->
+  <div id="hud" class="hud hidden">
+    <div class="hud-row">
+      <span><b id="hud-correct">0</b> / <span id="hud-goal">100</span> 問正解</span>
+      <span class="hud-time">残り <b id="hud-time">4.0</b> 秒</span>
+    </div>
+    <div class="timer-bar"><div id="timer-fill" class="timer-fill"></div></div>
+  </div>
+
+  <!-- 問題 -->
+  <div id="play">
+    <section class="question">
+      <p class="question-text">
+        <span id="q-shanten" class="badge">-</span>
+        何を切りますか？（向聴数が最も進み、その中で受け入れが最大の打牌が正解）
+      </p>
+    </section>
+
+    <section class="hand-area">
+      <div id="hand" class="hand"></div>
+      <p id="loading" class="loading">問題を生成中…</p>
+    </section>
+  </div>
+
+  <!-- 作成モード -->
+  <section id="build" class="hidden">
+    <p class="build-lead">下の牌を選んで14枚の手牌を作ってください。上の手牌をクリックすると戻せます。</p>
+    <div id="build-hand" class="hand build-hand"></div>
+    <p class="build-count"><b id="build-count">0</b> / 14 枚</p>
+    <div class="build-actions">
+      <button id="build-solve" class="next-btn" type="button" disabled>正解を見る</button>
+      <button id="build-clear" class="sub-btn" type="button">すべて戻す</button>
+    </div>
+    <div class="palette" id="palette"></div>
+  </section>
+
+  <!-- チャレンジモードの終了画面 -->
+  <section id="end" class="panel hidden">
+    <img src="images/char.webp" alt="" class="mascot">
+    <h2 id="end-title" class="panel-title"></h2>
+    <p id="end-score" class="end-score"></p>
+    <p id="end-message" class="end-message"></p>
+    <button id="retry" class="next-btn" type="button">もう一度</button>
+  </section>
+
+  <!-- 判定結果と全打牌の受け入れ -->
+  <section id="result" class="result hidden">
+    <p id="verdict" class="verdict"></p>
+    <div class="table-wrap">
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th>打牌</th>
+            <th>向聴</th>
+            <th>受け入れ</th>
+            <th>受け入れ牌</th>
+          </tr>
+        </thead>
+        <tbody id="result-body"></tbody>
+      </table>
+    </div>
+    <button id="next" class="next-btn" type="button">次の問題 （Space）</button>
+  </section>
+
+  <section class="note">
+    <details>
+      <summary>この問題の判定基準について</summary>
+      <p>
+        正解は次の2段階で決めています。<br>
+        <b>1.</b> 切ったあとの向聴数が最も小さい打牌を選ぶ（向聴戻しは正解になりません）。<br>
+        <b>2.</b> そのなかで受け入れ枚数が最大の打牌を正解とする。<br>
+        受け入れ枚数まで同じ打牌が複数ある場合は、そのすべてを正解とします。
+        表では向聴戻しの打牌のほうが受け入れ枚数が多く見えることがありますが、
+        向聴数が優先されるため正解にはなりません。
+      </p>
+      <p>
+        <b>受け入れ枚数だけで決めた正解です。</b>
+        打点（役・ドラ）、待ちの良し悪し、危険牌かどうか、場況などは考慮していません。
+        実戦ではこれらの理由で「受け入れが狭いほうが正解」になる場面も多くあります。
+      </p>
+      <p>
+        受け入れ枚数は自分の手牌14枚のみを見えている牌として計算しています（他家の捨て牌・ドラ表示牌は考慮しません）。
+      </p>
+      <p>
+        聴牌の行の「受け入れ」は和了牌の枚数（待ちの広さ）です。表では「枚（待ち）」と表示しています。
+      </p>
+    </details>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p class="credit">create by 古里将棋同好会</p>
+  <p class="license">牌画像: <a href="https://github.com/FluffyStuff/riichi-mahjong-tiles" target="_blank" rel="noopener">FluffyStuff/riichi-mahjong-tiles</a>（CC0 / パブリックドメイン）</p>
+</footer>
+
+<script src="js/shanten.js"></script>
+<script src="js/analyze.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+このフォルダの牌画像について
+================================
+
+出典: FluffyStuff/riichi-mahjong-tiles
+      https://github.com/FluffyStuff/riichi-mahjong-tiles
+
+ライセンス: CC0 1.0 (パブリックドメイン)
+            https://creativecommons.org/publicdomain/zero/1.0/
+
+原文:
+  "This work is in the public domain.
+   For more information, visit https://creativecommons.org/publicdomain/zero/1.0/."
+
+商用利用: 可
+クレジット表記: 不要（本アプリでは出典として任意で表示しています）
+
+ファイル名の対応
+----------------
+  1m.svg 〜 9m.svg : 一萬 〜 九萬
+  1p.svg 〜 9p.svg : 一筒 〜 九筒
+  1s.svg 〜 9s.svg : 一索 〜 九索
+  1z.svg           : 東
+  2z.svg           : 南
+  3z.svg           : 西
+  4z.svg           : 北
+  5z.svg           : 白
+  6z.svg           : 發
+  7z.svg           : 中
+  0m/0p/0s.svg     : 赤ドラ五萬・五筒・五索（現在アプリでは未使用）
+  front.svg        : 牌の枠（絵柄の下に重ねて使う）
+  back.svg         : 牌の裏（現在アプリでは未使用）
+
+牌はすべて 300x400 の viewBox で位置が揃っているため、
+front.svg の上に絵柄を重ねると1枚の牌として表示されます。
+別の画像素材に差し替える場合も、上記のファイル名に合わせてください。
