@@ -59,6 +59,10 @@ const CHEERS = {
   low:   ['次はきっと伸びます', 'もう一度挑戦してみましょう', '練習モードで力をためましょう'],
 };
 
+// 正解したときに、点数の増減を画面に残しておく時間（ミリ秒）
+const DELTA_HOLD = 2000;
+let _deltaTimer = 0;
+
 // 上級の問題を探す試行回数。多いほど良問になるが生成が遅くなる
 const SPEED_TRIES = { practice: 4000, challenge: 400 };
 
@@ -322,6 +326,7 @@ function challengeStart() {
     show(el.intro, false);
     show(el.play, true);
     show(el.hud, true);
+    clearTimeout(_deltaTimer);
     el.hudDelta.textContent = '';
     el.hudTime.textContent = (currentTimeLimit() / 1000).toFixed(1);
     updateHud();
@@ -336,8 +341,6 @@ function challengeNext() {
     challengeEnd(false, '問題を生成できませんでした。');
     return;
   }
-  el.hudDelta.textContent = ''; // 前の問題の増減は消す
-
   // 親は1ゲームに最大1回。いちど親になったら、間違えるまで連荘する
   if (c.isDealer) {
     c.renchan++; // 親のまま正解したので連荘
@@ -409,6 +412,7 @@ function challengeMiss(picked) {
   c.childWins = 0;
   c.lastHand = row;
   markHand(picked);
+  clearTimeout(_deltaTimer); // 不正解は「続ける」を押すまで消さない
   updateHud(-row.points, (toDealer ? '親に放銃 ' : '子に放銃 ') + row.label);
   renderResult(picked, false);
   if (!checkChallengeEnd()) showResume();
@@ -433,6 +437,9 @@ function challengeAnswer(picked, ok) {
   if (c.isDealer && c.renchan > c.maxRenchan) c.maxRenchan = c.renchan;
   const seatText = c.isDealer ? '親' + (c.renchan > 0 ? c.renchan + '連荘' : '') + ' ' : '';
   updateHud(row.points, seatText + row.label);
+  // 正解するとすぐ次の問題へ進むので、増減はしばらく残しておく
+  clearTimeout(_deltaTimer);
+  _deltaTimer = setTimeout(() => { el.hudDelta.textContent = ''; }, DELTA_HOLD);
 
   if (checkChallengeEnd()) return;
   challengeNext();
@@ -450,6 +457,7 @@ function showResume() {
 }
 
 function challengeResume() {
+  el.hudDelta.textContent = ''; // 不正解の表示はここで消す
   show(el.resume, false);
   challengeNext();
 }
@@ -459,8 +467,11 @@ function challengeEnd(cleared, reason) {
   const c = state.challenge;
   c.running = false;
   stopTimer();
-  show(el.hud, false);
+  clearTimeout(_deltaTimer); // 最後の増減は残したままにする
   show(el.resume, false);
+  // HUD は残したままにする。最後の増減（例：子に放銃 2翻40符 -2,600）を見せるため
+  el.hudTime.textContent = '0.0';
+  el.timerFill.style.width = '0%';
 
   el.endTitle.textContent = cleared ? 'クリア！' : 'ゲームオーバー';
   el.endTitle.className = 'panel-title ' + (cleared ? 'is-clear' : 'is-over');

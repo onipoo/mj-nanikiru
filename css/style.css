@@ -584,3 +584,7 @@ body {
   .quick-row { flex-wrap: wrap; font-size: 14px; padding: 8px 10px; }
   .quick-info { width: 100%; margin-left: 0; padding-left: 92px; font-size: 13px; }
 }
+
+/* 判定のすぐ下に置くボタン */
+.result-actions { margin-bottom: 18px; }
+.result-actions .next-btn { margin-top: 0; }
