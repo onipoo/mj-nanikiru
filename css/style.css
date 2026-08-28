@@ -584,13 +584,3 @@ body {
   .quick-row { flex-wrap: wrap; font-size: 14px; padding: 8px 10px; }
   .quick-info { width: 100%; margin-left: 0; padding-left: 92px; font-size: 13px; }
 }
-
-/* 終了画面に出す最後の増減 */
-.end-delta {
-  margin: -6px 0 8px;
-  font-size: 17px;
-  font-weight: bold;
-  font-variant-numeric: tabular-nums;
-}
-.end-delta.is-plus { color: var(--correct); }
-.end-delta.is-minus { color: var(--wrong); }

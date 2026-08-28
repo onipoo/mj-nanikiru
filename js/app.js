@@ -111,7 +111,6 @@ const el = {
   hudSeat: document.getElementById('hud-seat'),
   hudSeatNote: document.getElementById('hud-seat-note'),
   endDetail: document.getElementById('end-detail'),
-  endDelta: document.getElementById('end-delta'),
   resume: document.getElementById('resume'),
   hudGoal: document.getElementById('hud-goal'),
   hudTime: document.getElementById('hud-time'),
@@ -299,7 +298,6 @@ function challengeStart() {
   c.maxStreak = 0;
   c.misses = 0;
   c.lastHand = null;
-  c.lastDelta = null;
   c.isDealer = false;
   c.dealerUsed = false;
   c.renchan = 0;
@@ -467,14 +465,6 @@ function challengeEnd(cleared, reason) {
   el.endTitle.textContent = cleared ? 'クリア！' : 'ゲームオーバー';
   el.endTitle.className = 'panel-title ' + (cleared ? 'is-clear' : 'is-over');
   el.endScore.textContent = Math.max(0, c.score).toLocaleString() + ' 点';
-  // 最後の1手の増減を出す
-  if (c.lastDelta) {
-    el.endDelta.textContent = c.lastDelta.text;
-    el.endDelta.className = 'end-delta ' + (c.lastDelta.plus ? 'is-plus' : 'is-minus');
-    show(el.endDelta, true);
-  } else {
-    show(el.endDelta, false);
-  }
   el.endDetail.textContent =
     c.correct + '問正解 ／ 最大' + c.maxStreak + '問連続 ／ ミス' + c.misses + '回' +
     (c.maxRenchan > 0 ? ' ／ 親' + c.maxRenchan + '連荘' : '');
@@ -540,11 +530,9 @@ function updateHud(delta, label) {
 
   // 増減と役名は、次の問題が始まるまで残す
   if (delta) {
-    const text = (label ? label + ' ' : '') + (delta > 0 ? '+' : '') + delta.toLocaleString();
-    el.hudDelta.textContent = text;
+    el.hudDelta.textContent =
+      (label ? label + ' ' : '') + (delta > 0 ? '+' : '') + delta.toLocaleString();
     el.hudDelta.className = 'hud-delta ' + (delta > 0 ? 'is-plus' : 'is-minus');
-    // 終了画面でも最後の1手を見せられるように控えておく
-    c.lastDelta = { text, plus: delta > 0 };
   }
 }
 
