@@ -255,10 +255,16 @@ body {
 .end-score { margin: 0 0 8px; font-size: 30px; font-weight: bold; }
 .end-message { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
 
-/* 残り時間と正解数 */
+/* 点棒・残り時間。スクロールしても点数が見えるよう上部に貼り付ける */
 .hud {
-  max-width: 520px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  max-width: 560px;
   margin: 0 auto 16px;
+  padding: 8px 14px 10px;
+  border-radius: 0 0 10px 10px;
+  background: rgba(8, 22, 44, 0.92);
   color: #e8eef7;
 }
 .hud-row {
@@ -268,7 +274,8 @@ body {
   font-size: 14px;
   margin-bottom: 5px;
 }
-.hud-row b { font-size: 19px; }
+.hud-sub { font-size: 13px; color: #a8c4e0; }
+.hud-sub b { font-size: 16px; color: #fff; }
 .hud-time { font-variant-numeric: tabular-nums; }
 .timer-bar {
   height: 8px;
@@ -481,3 +488,109 @@ body {
 @media (max-width: 380px) {
   .mode-tab { padding: 5px 8px; font-size: 12px; }
 }
+
+/* 上級モードの選択（チャレンジの説明画面） */
+.intro-option {
+  display: block;
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.intro-option select {
+  margin-left: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+}
+
+/* 上級モードの表で補足的に見せる文字 */
+.result-table td.muted { color: var(--muted); font-size: 13px; }
+
+/* --- チャレンジモードの点棒 --- */
+.hud-score { font-variant-numeric: tabular-nums; }
+.hud-score b { font-size: 30px; line-height: 1.1; }
+.hud-unit { font-size: 15px; margin-left: 2px; }
+.hud-target { font-size: 12px; color: #a8c4e0; margin-left: 8px; }
+.hud-miss { font-variant-numeric: tabular-nums; }
+.hud-miss.is-danger { color: #ff8f84; font-weight: bold; }
+
+/* 増減の表示 */
+.hud-delta {
+  font-size: 17px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hud-delta.is-plus { color: #7ee0a5; }
+.hud-delta.is-minus { color: #ff8f84; }
+
+.hud-streak { margin-left: 6px; font-size: 13px; color: #7ee0a5; }
+
+.end-detail {
+  margin: -4px 0 12px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* 親・子の表示 */
+.hud-seat {
+  display: inline-block;
+  min-width: 24px;
+  margin-right: 8px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: #2e5580;
+  color: #e8eef7;
+  font-size: 12px;
+  text-align: center;
+}
+.hud-seat.is-dealer {
+  background: #c33a2e;
+  color: #fff;
+  font-weight: bold;
+}
+.hud-seat-note { margin-left: 6px; font-size: 11px; color: #8ba8c8; }
+.hud-seat-note.is-renchan { color: #ffcf6b; font-weight: bold; font-size: 12px; }
+
+/* --- チャレンジモードの簡易結果 --- */
+.quick-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.quick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f0eee7;
+  font-size: 15px;
+}
+.quick-row.is-best { background: #e6f3ea; }
+.quick-label {
+  min-width: 92px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.quick-row.is-best .quick-label { color: var(--correct); font-weight: bold; }
+.quick-name { font-weight: bold; }
+.quick-info { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  .quick-row { flex-wrap: wrap; font-size: 14px; padding: 8px 10px; }
+  .quick-info { width: 100%; margin-left: 0; padding-left: 92px; font-size: 13px; }
+}
+
+/* 終了画面に出す最後の増減 */
+.end-delta {
+  margin: -6px 0 8px;
+  font-size: 17px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+.end-delta.is-plus { color: var(--correct); }
+.end-delta.is-minus { color: var(--wrong); }

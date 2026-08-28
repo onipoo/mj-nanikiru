@@ -27,6 +27,13 @@
 
   <div class="header-right" id="practice-controls">
     <label class="level">
+      判定基準
+      <select id="criterion">
+        <option value="ukeire" selected>受け入れ枚数</option>
+        <option value="speed">和了の速さ（上級）</option>
+      </select>
+    </label>
+    <label class="level">
       向聴数
       <select id="target">
         <option value="" selected>ランダム</option>
@@ -34,6 +41,7 @@
         <option value="1">1シャンテン</option>
         <option value="2">2シャンテン</option>
         <option value="3">3シャンテン</option>
+
       </select>
     </label>
   </div>
@@ -52,12 +60,17 @@
     <img src="images/char.webp" alt="" class="mascot">
     <h2 class="panel-title">チャレンジモード</h2>
     <ul class="rules">
-      <li>制限時間は <b>1問 4秒</b></li>
-      <li>正解するとすぐ次の問題へ進む</li>
-      <li><b>間違えるか時間切れになった時点で終了</b></li>
-      <li><b>100問連続正解でクリア</b></li>
-      <li>向聴数はランダム。問題の内容は練習モードと同じ</li>
+      <li><b>25,000点</b>から始まり、<b>100,000点</b>でクリア</li>
+      <li>点棒が尽きるか、<b>3回間違えたら終了</b></li>
+      <li>制限時間は <b id="rule-time">1問 4秒</b></li>
     </ul>
+    <label class="intro-option">
+      判定基準
+      <select id="challenge-criterion">
+        <option value="ukeire" selected>受け入れ枚数</option>
+        <option value="speed">和了の速さ（上級）</option>
+      </select>
+    </label>
     <button id="start" class="next-btn" type="button">スタート</button>
     <p id="prepare" class="loading hidden">問題を準備中…</p>
   </section>
@@ -65,7 +78,15 @@
   <!-- チャレンジモード中の残り時間と正解数 -->
   <div id="hud" class="hud hidden">
     <div class="hud-row">
-      <span><b id="hud-correct">0</b> / <span id="hud-goal">100</span> 問正解</span>
+      <span class="hud-score">
+        <b id="hud-score">25,000</b><span class="hud-unit">点</span>
+        <span class="hud-target">／ <span id="hud-goal">100,000</span>点でクリア</span>
+      </span>
+      <span id="hud-delta" class="hud-delta"></span>
+    </div>
+    <div class="hud-row hud-sub">
+      <span><span id="hud-seat" class="hud-seat">子</span><b id="hud-correct">0</b> 問正解<span id="hud-seat-note" class="hud-seat-note">（親はまだ）</span><span id="hud-streak" class="hud-streak"></span></span>
+      <span id="hud-miss" class="hud-miss">ミス 0 / 3</span>
       <span class="hud-time">残り <b id="hud-time">4.0</b> 秒</span>
     </div>
     <div class="timer-bar"><div id="timer-fill" class="timer-fill"></div></div>
@@ -76,7 +97,7 @@
     <section class="question">
       <p class="question-text">
         <span id="q-shanten" class="badge">-</span>
-        何を切りますか？（向聴数が最も進み、その中で受け入れが最大の打牌が正解）
+        <span id="q-text">何を切りますか？（向聴数が最も進み、その中で受け入れが最大の打牌が正解）</span>
       </p>
     </section>
 
@@ -103,6 +124,8 @@
     <img src="images/char.webp" alt="" class="mascot">
     <h2 id="end-title" class="panel-title"></h2>
     <p id="end-score" class="end-score"></p>
+    <p id="end-delta" class="end-delta hidden"></p>
+    <p id="end-detail" class="end-detail"></p>
     <p id="end-message" class="end-message"></p>
     <div class="end-actions">
       <button id="retry" class="next-btn" type="button">もう一度</button>
@@ -116,10 +139,14 @@
   <!-- 判定結果と全打牌の受け入れ -->
   <section id="result" class="result hidden">
     <p id="verdict" class="verdict"></p>
-    <div class="table-wrap">
+
+    <!-- チャレンジモード用の簡単な比較 -->
+    <div id="quick-result" class="quick-result hidden"></div>
+
+    <div id="table-wrap" class="table-wrap">
       <table class="result-table">
         <thead>
-          <tr>
+          <tr id="result-head">
             <th>打牌</th>
             <th>向聴</th>
             <th>受け入れ</th>
@@ -130,12 +157,15 @@
       </table>
     </div>
     <button id="next" class="next-btn" type="button">次の問題 （Space）</button>
+    <button id="resume" class="next-btn hidden" type="button">続ける （Space）</button>
   </section>
 
   <section class="note">
     <details>
-      <summary>この問題の判定基準について</summary>
-      <p>
+      <summary id="note-summary">この問題の判定基準について</summary>
+
+      <div id="note-ukeire">
+<p>
         正解は次の2段階で決めています。<br>
         <b>1.</b> 切ったあとの向聴数が最も小さい打牌を選ぶ（向聴戻しは正解になりません）。<br>
         <b>2.</b> そのなかで受け入れ枚数が最大の打牌を正解とする。<br>
@@ -154,6 +184,53 @@
       <p>
         聴牌の行の「受け入れ」は和了牌の枚数（待ちの広さ）です。表では「枚（待ち）」と表示しています。
       </p>
+      </div>
+
+      <div id="note-speed" class="hidden">
+<p>
+        <b>「あと12巡のうちに和了できる確率」が最も高い打牌が正解です。</b>
+        受け入れ枚数は「次の1手が進むか」しか見ませんが、こちらは和了までの道のり全体を見ます。
+        そのため次のような打牌が正解になることがあります。
+      </p>
+      <p>
+        <b>・受け入れが狭くても、聴牌したときの待ちが広い打牌</b><br>
+        受け入れが1枚少なくても、聴牌後の待ちが広ければ和了率は高くなります。
+      </p>
+      <p>
+        <b>・聴牌を崩す打牌（向聴戻し）</b><br>
+        待ちが狭い聴牌より、いったん1シャンテンに戻して
+        受け入れを広げたほうが和了率が高くなることがあります。
+      </p>
+      <p>
+        計算方法です。見えていない牌は136枚から自分の手牌14枚を引いた122枚とし、
+        そこから12回ツモる前提で確率を求めます。
+        聴牌なら「12巡のうちに待ち牌を引く確率」、
+        1シャンテンなら「i巡目に聴牌して、残りの巡で和了牌を引く」を
+        すべての巡について足し合わせています。
+        聴牌したあとに待ちを広げられる場合は、その待ち変えも見込みます。
+      </p>
+      <p>
+        <b>残り12巡としているのには理由があります。</b>
+        以前は打ち切りを設けず「和了までの平均ツモ回数」で比べていましたが、
+        それだと実戦では有効でない向聴戻しまで正解になってしまいました。
+        向聴戻しは聴牌するまで和了できないぶん序盤の確率がゼロで、
+        そのかわり後半に伸びます。無限にツモれる前提ではこの後半の伸びが効きすぎるためです。
+        麻雀は18巡で終わるので、回収できない伸びを評価しないよう巡目を区切っています。
+      </p>
+      <p>
+        <b>表の読み方</b><br>
+        「受け入れ」は聴牌に近づく牌の枚数、
+        「聴牌までの平均ツモ」はその牌を引くまでにかかる平均のツモ回数です。
+        「聴牌したときの待ち」はその聴牌形での和了牌の枚数で、
+        どの牌で聴牌するかによって変わるため、牌の枚数で重み付けした平均を出しています。
+        <b>右端の「12巡以内の和了率」が判定に使う値です。</b>
+        受け入れが広くても待ちが狭ければ遅く、受け入れが狭くても待ちが広ければ速くなります。
+      </p>
+      <p>
+        2シャンテン以下に戻す打牌は計算量の都合で評価していません。表では「—」と表示します。
+        鳴きは考慮せず、ツモのみで計算しています。
+      </p>
+      </div>
     </details>
   </section>
 
@@ -166,6 +243,7 @@
 
 <script src="js/shanten.js"></script>
 <script src="js/analyze.js"></script>
+<script src="js/speed.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
