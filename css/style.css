@@ -588,3 +588,15 @@ body {
 /* 判定のすぐ下に置くボタン */
 .result-actions { margin-bottom: 18px; }
 .result-actions .next-btn { margin-top: 0; }
+
+/* 作成モードの判定基準の選択 */
+.build-criterion { font-size: 13px; color: #bcd6f0; }
+.build-criterion select {
+  margin-left: 6px;
+  padding: 8px 10px;
+  border: 1px solid #2e5580;
+  border-radius: 6px;
+  background: #16375c;
+  color: #e8eef7;
+  font: inherit;
+}

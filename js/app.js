@@ -133,6 +133,7 @@ const el = {
   buildHand: document.getElementById('build-hand'),
   buildCount: document.getElementById('build-count'),
   buildSolve: document.getElementById('build-solve'),
+  buildCriterion: document.getElementById('build-criterion-select'),
   buildClear: document.getElementById('build-clear'),
   palette: document.getElementById('palette'),
   result: document.getElementById('result'),
@@ -819,14 +820,36 @@ function buildClear() {
 // 組み立てた手牌を解析して結果を出す
 function buildSolve() {
   if (buildTotal() !== BUILD_MAX) return;
-  state.criterion = 'ukeire'; // 作成モードは受け入れ枚数で表示する
+  state.criterion = el.buildCriterion.value;
+  const speed = state.criterion === 'speed';
   const hand = state.build.slice();
   const results = analyzeHand(hand);
-  const best = results[0];
-  const answers = results
-    .filter((r) => r.shanten === best.shanten && r.count === best.count)
-    .map((r) => r.discard);
-  state.problem = { hand, results, answers, shanten: best.shanten };
+  const shanten = results[0].shanten;
+
+  let answers;
+  let speedResults = null;
+  if (speed) {
+    speedResults = analyzeSpeed(hand);
+    const best = speedResults[0];
+    // 上級は聴牌と1シャンテンのみ計算できる。それより遠い手牌は判定できない
+    if (best.rate === null) {
+      state.problem = { hand, results, answers: [], shanten, speed: speedResults };
+      for (const btn of el.buildHand.children) btn.classList.remove('is-correct');
+      renderResult(undefined, true,
+        shantenLabel(shanten) + '　上級の判定は聴牌と1シャンテンのみ対応しています');
+      return;
+    }
+    answers = speedResults
+      .filter((r) => r.rate !== null && Math.abs(r.rate - best.rate) < 1e-9)
+      .map((r) => r.discard);
+  } else {
+    const best = results[0];
+    answers = results
+      .filter((r) => r.shanten === best.shanten && r.count === best.count)
+      .map((r) => r.discard);
+  }
+
+  state.problem = { hand, results, answers, shanten, speed: speedResults };
 
   // 手牌の最善手に印を付ける
   for (const btn of el.buildHand.children) {
@@ -834,8 +857,8 @@ function buildSolve() {
     btn.classList.toggle('is-correct', answers.includes(i));
   }
 
-  const label = shantenLabel(best.shanten);
-  renderResult(undefined, true, label + '　最善手: ' + answers.map((a) => TILE_LABELS[a]).join(' / '));
+  renderResult(undefined, true,
+    shantenLabel(shanten) + '　最善手: ' + answers.map((a) => TILE_LABELS[a]).join(' / '));
 }
 
 // --- モード切替 -------------------------------------------------------
@@ -902,6 +925,10 @@ el.start.addEventListener('click', challengeStart);
 el.resume.addEventListener('click', challengeResume);
 el.buildSolve.addEventListener('click', buildSolve);
 el.buildClear.addEventListener('click', buildClear);
+el.buildCriterion.addEventListener('change', () => {
+  // すでに14枚そろっていれば、その場で解析し直す
+  if (buildTotal() === BUILD_MAX) buildSolve();
+});
 el.retry.addEventListener('click', () => setMode('challenge'));
 // 練習モードでは回答後にスペースキーで次の問題へ
 document.addEventListener('keydown', (e) => {
